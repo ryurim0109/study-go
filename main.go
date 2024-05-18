@@ -2,7 +2,7 @@ package main
 
 import (
 	"log"
-
+	"fmt"
 	"github.com/gofiber/fiber/v2"
 	todo "github.com/ryurim0109/study-go/cmd/todo"
 )
@@ -27,6 +27,10 @@ func main() {
 
 	setupRoutes(app)
 
+
+
+	log.Fatal(app.Listen(":8004"))
+}
 	// app.Get("/api/*", func(c *fiber.Ctx) error {
   //       msg := fmt.Sprintf("✋ %s", c.Params("*"))
   //       return c.SendString(msg) // => ✋ register
@@ -34,5 +38,4 @@ func main() {
 
 
 
-	log.Fatal(app.Listen(":8004"))
-}
+	
