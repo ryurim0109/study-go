@@ -15,6 +15,6 @@ func config() {
 		log.Fatal("Error loading .env file")
 	}
 
-	secretKey := os.Getenv("DB_HOST")
-	fmt.Println(secretKey)
+	host := os.Getenv("DB_HOST")
+	fmt.Println(host)
 }
