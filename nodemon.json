@@ -1,0 +1,5 @@
+{
+  "watch": ["*"],
+  "ext": "go graphql",
+  "exec": "go run main.go && lsof -n -i4TCP:8004 | xargs killall -9 && go run main.go "
+}

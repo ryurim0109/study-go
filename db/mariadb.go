@@ -1,19 +1,18 @@
-package mariadb 
+package mariadb
 
 import (
+	"database/sql"
 	"log"
 	"os"
+	"time"
+
+	"github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
 )
 
-var (
-	DBConn *gorm.DB
-)
 
-func Init() {
-	
+
+func GetConnector() *sql.DB {
 	err := godotenv.Load(".env")
 
 	if err != nil {
@@ -23,16 +22,50 @@ func Init() {
 	dbHost := os.Getenv("DB_HOST")
 	dbPort := os.Getenv("DB_PORT")
 	dbUser := os.Getenv("DB_USER")
-	dbName := os.Getenv("DB_DATABASE")
+	dbDatabase := os.Getenv("DB_DATABASE")
 	password := os.Getenv("DB_PASSWORD")
 
-	var dbErr error
-
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
-		dbUser, password, dbHost, dbPort, dbName)
-
-	DBConn, dbErr = gorm.Open(mysql.Open(dsn), &gorm.Config{})
-	if dbErr != nil {
-		log.Fatal("failed to connect database")
+	cfg := mysql.Config{
+		User:                 dbUser,
+		Passwd:               password,
+		Net:                  "tcp",
+		Addr:                 dbHost+":"+dbPort,
+		Collation:            "utf8mb4_general_ci",
+		Loc:                  time.UTC,
+		MaxAllowedPacket:     4 << 20.,
+		AllowNativePasswords: true,
+		CheckConnLiveness:    true,
+		DBName:							dbDatabase ,
 	}
+	connector, err := mysql.NewConnector(&cfg)
+	if err != nil {
+		panic(err)
+	}
+	db := sql.OpenDB(connector)
+	return db
+	
 }
+
+func InitDB() *sql.DB {
+	db := GetConnector()
+	err := db.Ping()
+	if err != nil {
+		panic(err)
+	}
+	return db
+}
+
+// func Init() {
+	
+
+
+// 	var dbErr error
+
+// 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+// 		dbUser, password, dbHost, dbPort, dbName)
+
+// 	DBConn, dbErr = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+// 	if dbErr != nil {
+// 		log.Fatal("failed to connect database")
+// 	}
+// }
