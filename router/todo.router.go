@@ -11,7 +11,7 @@ func SetupRoutes(micro *fiber.App) {
 	// app.Get("/api/todo", todo.GetAllTodoList)
 
 		micro.Route("/todo", func(router fiber.Router) {
-		router.Get("/", todo.Create)
+		router.Get("/", todo.Get)
 		router.Post("/", todo.Create)
 	})
 }

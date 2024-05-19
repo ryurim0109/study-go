@@ -36,6 +36,7 @@ func GetConnector() *sql.DB {
 		AllowNativePasswords: true,
 		CheckConnLiveness:    true,
 		DBName:							dbDatabase ,
+		ParseTime: true,
 	}
 	connector, err := mysql.NewConnector(&cfg)
 	if err != nil {

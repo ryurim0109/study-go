@@ -5,8 +5,9 @@ import (
 )
 
 type ToDo struct {
-	TodoId    uint `json:"todoId" gorm:"primaryKey"`
+	Id    uint `json:"todoId" gorm:"primaryKey"`
 	Text     string    `json:"text"`
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
+	IsDel int64 `json:"isDel"`
 }
