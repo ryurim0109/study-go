@@ -6,6 +6,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	todoRouter "github.com/ryurim0109/study-go/router"
 )
 
 
@@ -25,7 +26,7 @@ func main() {
 		AllowCredentials: true,
 	}))
 
-	todoRouter.setupRoutes(micro)
+	todoRouter.SetupRoutes(micro)
 
 
 

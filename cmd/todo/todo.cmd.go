@@ -2,7 +2,7 @@ package todo
 
 import (
 	"time"
-
+	"strconv"
 	"log"
 
 	"github.com/gofiber/fiber/v2"
@@ -41,10 +41,24 @@ func Create(c *fiber.Ctx) error {
 	}
 
 	// 삽입된 레코드의 ID 반환
-	cur_id, err := res.LastInsertId()
+	todoId, err := res.LastInsertId()
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	return c.JSON(fiber.Map{"id": cur_id})
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"status": "success", "data": fiber.Map{"id": todoId}})
+}
+
+
+// read 
+func Get(c *fiber.Ctx) error{
+	var page = c.Query("page", "1")
+	var limit = c.Query("limit", "10")
+
+	intPage, _ := strconv.Atoi(page)
+	intLimit, _ := strconv.Atoi(limit)
+	offset := (intPage - 1) * intLimit
+
+	var notes []
+
 }
