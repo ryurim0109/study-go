@@ -7,11 +7,10 @@ import (
 
 func SetupRoutes(micro *fiber.App) {
 
-
-	// app.Get("/api/todo", todo.GetAllTodoList)
-
-		micro.Route("/todo", func(router fiber.Router) {
+	micro.Route("/todo", func(router fiber.Router) {
 		router.Get("/", todo.Get)
 		router.Post("/", todo.Create)
+		router.Patch("/:todoId", todo.Update)
+		router.Delete("/:todoId", todo.Delete)
 	})
 }

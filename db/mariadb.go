@@ -10,8 +10,6 @@ import (
 	"github.com/joho/godotenv"
 )
 
-
-
 func GetConnector() *sql.DB {
 	err := godotenv.Load(".env")
 
@@ -29,14 +27,14 @@ func GetConnector() *sql.DB {
 		User:                 dbUser,
 		Passwd:               password,
 		Net:                  "tcp",
-		Addr:                 dbHost+":"+dbPort,
+		Addr:                 dbHost + ":" + dbPort,
 		Collation:            "utf8mb4_general_ci",
 		Loc:                  time.UTC,
 		MaxAllowedPacket:     4 << 20.,
 		AllowNativePasswords: true,
 		CheckConnLiveness:    true,
-		DBName:							dbDatabase ,
-		ParseTime: true,
+		DBName:               dbDatabase,
+		ParseTime:            true,
 	}
 	connector, err := mysql.NewConnector(&cfg)
 	if err != nil {
@@ -44,29 +42,17 @@ func GetConnector() *sql.DB {
 	}
 	db := sql.OpenDB(connector)
 	return db
-	
+
 }
 
 func InitDB() *sql.DB {
 	db := GetConnector()
 	err := db.Ping()
-	if err != nil {
+	if err != nil || db.Ping() != nil { // 핑을 통해 네트워크 연결 및 DB 사용 가능한지 체크
 		panic(err)
 	}
+	db.SetConnMaxLifetime(time.Minute * 3) // 유휴 연결 시간 설정 (5분 미만으로 잡는 게 좋다고 함)
+	db.SetMaxOpenConns(10)                 // 최대 연결 수 설정
+	db.SetMaxIdleConns(10)                 // 최대 유휴 연결 수 설정
 	return db
 }
-
-// func Init() {
-	
-
-
-// 	var dbErr error
-
-// 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
-// 		dbUser, password, dbHost, dbPort, dbName)
-
-// 	DBConn, dbErr = gorm.Open(mysql.Open(dsn), &gorm.Config{})
-// 	if dbErr != nil {
-// 		log.Fatal("failed to connect database")
-// 	}
-// }
