@@ -1,12 +1,19 @@
 package errorHandler
 
 import (
-	"log"
+	"fmt"
 
 	"github.com/gofiber/fiber/v2"
 )
 
 func SendJSONError(c *fiber.Ctx, message string) error {
-	log.Fatalf("error: %v\n", message)
-	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": message})
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println("Recovered. Error:\n", r)
+			c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": message})
+		}
+	}()
+
+	panic(message)
+
 }

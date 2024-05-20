@@ -1,6 +1,7 @@
 package todo
 
 import (
+	"database/sql"
 	"fmt"
 	"strconv"
 	"time"
@@ -10,6 +11,17 @@ import (
 	errorHandler "github.com/ryurim0109/study-go/error"
 	models "github.com/ryurim0109/study-go/model"
 )
+
+// 존재하는지 check
+func checkTodoExists(tx *sql.Tx, todoId string) (bool, error) {
+	var exists bool
+	query := "SELECT EXISTS(SELECT 1 FROM edel_todo WHERE isDel = 0 AND id = ?)"
+	err := tx.QueryRow(query, todoId).Scan(&exists)
+	if err != nil {
+		return false, err
+	}
+	return exists, nil
+}
 
 // Create 함수
 func Create(c *fiber.Ctx) error {
@@ -99,7 +111,7 @@ func Update(c *fiber.Ctx) error {
 	tx, err := conn.Begin()
 	if err != nil {
 		tx.Rollback()
-		panic(err)
+		return errorHandler.SendJSONError(c, "알 수 없는 에러 발생!")
 	}
 	todoId := c.Params("todoId")
 	type Request struct {
@@ -108,6 +120,18 @@ func Update(c *fiber.Ctx) error {
 	var req Request
 	if err := c.BodyParser(&req); err != nil {
 		return errorHandler.SendJSONError(c, "cannot parse JSON")
+	}
+
+	// Todo 존재 여부 확인
+	exists, err := checkTodoExists(tx, todoId)
+	if err != nil {
+		tx.Rollback()
+		return errorHandler.SendJSONError(c, "알 수 없는 에러 발생!")
+	}
+
+	if !exists {
+		tx.Rollback()
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"status": "error", "message": "Todo ID not found"})
 	}
 
 	text := req.Text
@@ -120,10 +144,10 @@ func Update(c *fiber.Ctx) error {
 	_, err = tx.Exec(query)
 	if err != nil {
 		tx.Rollback()
-		panic(err)
-	} else {
-		tx.Commit()
+		return errorHandler.SendJSONError(c, "알 수 없는 에러 발생!")
 	}
+	tx.Commit()
+
 	// 응답 반환
 	return c.Status(fiber.StatusNoContent).JSON(fiber.Map{"status": "success"})
 }
@@ -136,19 +160,32 @@ func Delete(c *fiber.Ctx) error {
 	tx, err := conn.Begin()
 	if err != nil {
 		tx.Rollback()
-		panic(err)
+		return errorHandler.SendJSONError(c, "알 수 없는 에러 발생!")
 	}
+
 	todoId := c.Params("todoId")
 
-	query := fmt.Sprintf("UPDATE edel_todo SET isDel = 1 WHERE id = '%s'",
-		todoId)
-	_, err = tx.Exec(query)
+	// Todo 존재 여부 확인
+	exists, err := checkTodoExists(tx, todoId)
 	if err != nil {
 		tx.Rollback()
-		panic(err)
+		return errorHandler.SendJSONError(c, "알 수 없는 에러 발생!")
+	}
+
+	if !exists {
+		tx.Rollback()
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"status": "error", "message": "Todo ID not found"})
+	}
+
+	updateQuery := "UPDATE edel_todo SET isDel = 1 WHERE id = ?"
+	_, err = tx.Exec(updateQuery, todoId)
+	if err != nil {
+		tx.Rollback()
+		return errorHandler.SendJSONError(c, "알 수 없는 에러 발생!")
 	} else {
 		tx.Commit()
 	}
+
 	// 응답 반환
 	return c.Status(fiber.StatusNoContent).JSON(fiber.Map{"status": "success"})
 }
